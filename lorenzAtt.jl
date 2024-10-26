@@ -40,23 +40,27 @@ N = 10000  # High N for a smoother curve
 t, Y = runge_kutta4(lorenz, t0, tf, Y0, N)
 
 # 4x1 서브플롯 레이아웃 생성
-l = @layout [a; b; c; d]
+# l = @layout [a; b; c; d]
 
-# x(t) 그래프
-p1 = plot(t, Y[1, :], label="x(t)", xlabel="Time t", ylabel="x(t)")
+# # x(t) 그래프
+# p1 = plot(t, Y[1, :], label="x(t)", xlabel="Time t", ylabel="x(t)")
 
-# y(t) 그래프
-p2 = plot(t, Y[2, :], label="y(t)", xlabel="Time t", ylabel="y(t)")
+# # y(t) 그래프
+# p2 = plot(t, Y[2, :], label="y(t)", xlabel="Time t", ylabel="y(t)")
 
-# z(t) 그래프
-p3 = plot(t, Y[3, :], label="z(t)", xlabel="Time t", ylabel="z(t)")
+# # z(t) 그래프
+# p3 = plot(t, Y[3, :], label="z(t)", xlabel="Time t", ylabel="z(t)")
 
-# x-y-z 3D 그래프
-p4 = plot(Y[1, :], Y[2, :], Y[3, :], label="Lorenz Attractor", xlabel="x", ylabel="y", zlabel="z", legend=false)
+# # x-y-z 3D 그래프
+# p4 = plot(Y[1, :], Y[2, :], Y[3, :], label="Lorenz Attractor", xlabel="x", ylabel="y", zlabel="z", legend=false)
 
-# 서브플롯으로 그래프 표시
-plot(p1, p2, p3, p4, layout = l, size=(800, 1200))
+# # 서브플롯으로 그래프 표시
+# plot(p1, p2, p3, p4, layout = l, size=(800, 1200))
 
-display(plot)
+# display(plot)
 
-@save "lorenz_data.jld2" t Y
+file_dir = "/Volumes/YD/DeepApproximator"
+file_name = "lorenz_data.jld2"
+myfile = joinpath(file_dir, file_name)
+
+@save myfile t Y
