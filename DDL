@@ -1,0 +1,113 @@
+using Plots
+using JLD2
+
+# Load data
+@load "/Volumes/yoonJL/DeepApproximator/lorenz_data.jld2" t Y
+
+# Define input and target variables
+input_data = Y[1, :]
+target_data = Y[2:3, :]
+
+# Split data into training and testing
+train_size = 1000
+input_train = input_data[1:train_size]
+input_test = input_data[train_size+1:end]
+target_train = target_data[:, 1:train_size]
+target_test = target_data[:, train_size+1:end]
+
+# Model parameters
+sequence_length = 100
+batch_size = 16
+epoch_length = 2000
+hidden_size = 100
+output_size = size(target_train, 1)
+learning_rate = 0.01
+num_samples = length(input_train) - sequence_length
+
+# Initialize weights and biases
+W_in = randn(hidden_size, sequence_length)
+W_out = randn(output_size, hidden_size)
+b_in = randn(hidden_size, 1)
+b_out = randn(output_size, 1)
+
+# Training loop
+for epoch in 1:epoch_length
+    total_loss = 0
+    num_batches = 0
+    for i in 1:batch_size:num_samples - sequence_length + 1
+        num_batches += 1
+        x_batch = zeros(sequence_length, batch_size)
+        y_batch = zeros(output_size, batch_size)
+        for j in 0:batch_size - 1
+            idx = i + j
+            x_indices = idx : idx + sequence_length - 1
+            x_batch[:, j+1] = input_train[x_indices]
+            y_batch[:, j+1] = target_train[:, idx + sequence_length - 1]
+        end
+
+        # Forward pass
+        h = tanh.(W_in * x_batch .+ b_in)
+        y_pred = W_out * h .+ b_out
+
+        # Compute loss
+        loss = sum((y_batch .- y_pred).^2) / (batch_size * output_size)
+        total_loss += loss
+
+        # Backward pass
+        dL_dy_pred = 2 .* (y_pred .- y_batch)
+        dL_dW_out = (dL_dy_pred * h') / batch_size
+        dL_db_out = sum(dL_dy_pred, dims=2) / batch_size
+        dL_dh = W_out' * dL_dy_pred
+        dL_dW_in = ((dL_dh .* (1 .- h .^ 2)) * x_batch') / batch_size
+        dL_db_in = sum(dL_dh .* (1 .- h .^ 2), dims=2) / batch_size
+
+        # Update weights and biases
+        W_in -= learning_rate .* dL_dW_in
+        W_out -= learning_rate .* dL_dW_out
+        b_in -= learning_rate .* dL_db_in
+        b_out -= learning_rate .* dL_db_out
+        if total_loss / num_batches < 2e-3
+            println("Early stopping at epoch $epoch")
+            break
+        end
+    end
+    println("Epoch: $epoch, Average Loss: $(total_loss / num_batches)")
+end
+
+# 훈련(학습) 데이터에 대한 예측
+num_train_samples = sequence_length
+y_pred_train = zeros(output_size, num_train_samples)
+
+for i in 1:num_train_samples
+# i=1
+    x_indices = i : i + sequence_length - 1
+    x_train = reshape(input_train[x_indices], sequence_length, 1)
+    h_train = tanh.(W_in * x_train .+ b_in)
+    y_pred_train[:, i] = W_out * h_train .+ b_out
+end
+
+# 훈련 데이터에 대한 플롯
+plot(target_train[1, sequence_length:end], label="실제 값 (훈련)")
+plot!(y_pred_train[1, :], label="예측 값 (훈련)")
+xlabel!("시간")
+ylabel!("값") 
+title!("훈련 세트 결과")
+
+# # 검증 데이터에 대한 예측
+# num_test_samples = length(input_test) - sequence_length + 1
+# y_pred_test = zeros(output_size, num_test_samples)
+
+# for i in 1:num_test_samples
+#     x_indices = i : i + sequence_length - 1
+#     x_test = reshape(input_test[x_indices], sequence_length, 1)
+#     h_test = tanh.(W_in * x_test .+ b_in)
+#     y_pred_test[:, i] = W_out * h_test .+ b_out
+# end
+
+# # 검증 데이터에 대한 플롯
+# plot(target_test[1, sequence_length:end], label="실제 값 (검증)")
+# plot!(y_pred_test[1, :], label="예측 값 (검증)")
+# xlabel!("시간")
+# ylabel!("값")
+# title!("검증 세트 결과")
+
