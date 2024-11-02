@@ -9,7 +9,7 @@ input_data = Y[1, :]
 target_data = Y[2:3, :]
 
 # Split data into training and testing
-train_size = 1000
+train_size = 100
 input_train = input_data[1:train_size]
 input_test = input_data[train_size+1:end]
 target_train = target_data[:, 1:train_size]
@@ -92,22 +92,3 @@ plot!(y_pred_train[1, :], label="예측 값 (훈련)")
 xlabel!("시간")
 ylabel!("값") 
 title!("훈련 세트 결과")
-
-# # 검증 데이터에 대한 예측
-# num_test_samples = length(input_test) - sequence_length + 1
-# y_pred_test = zeros(output_size, num_test_samples)
-
-# for i in 1:num_test_samples
-#     x_indices = i : i + sequence_length - 1
-#     x_test = reshape(input_test[x_indices], sequence_length, 1)
-#     h_test = tanh.(W_in * x_test .+ b_in)
-#     y_pred_test[:, i] = W_out * h_test .+ b_out
-# end
-
-# # 검증 데이터에 대한 플롯
-# plot(target_test[1, sequence_length:end], label="실제 값 (검증)")
-# plot!(y_pred_test[1, :], label="예측 값 (검증)")
-# xlabel!("시간")
-# ylabel!("값")
-# title!("검증 세트 결과")
-
